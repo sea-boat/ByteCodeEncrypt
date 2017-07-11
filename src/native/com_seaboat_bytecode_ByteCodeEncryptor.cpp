@@ -11,7 +11,8 @@ void encode(char *str)
 	unsigned int m = strlen(str);
 	for (int i = 0; i < m; i++)
 	{
-		str[i] = str[i]+4;
+		//str[i] = ((str[i] - 97)*k) - ((str[i] - 97)*k) / q*q + 97;
+		str[i] = str[i] + k;
 	}
 
 }
@@ -19,15 +20,17 @@ void encode(char *str)
 void decode(char *str)
 {
 	unsigned int m = strlen(str);
+	//int k2 = (q + 1) / k;
 	for (int i = 0; i < m; i++)
 	{
-		str[i] = str[i] - 4;
+		//str[i] = ((str[i] - 97)*k2) - ((str[i] - 97)*k2) / q*q + 97;
+		str[i] = str[i] - k;
 	}
 }
 
 
 extern"C" JNIEXPORT jbyteArray JNICALL
-Java_com_seaboat_bytecode_ByteCodeEncryptor_encrypt(JNIEnv * env, jclass cla,jbyteArray text)
+Java_com_seaboat_bytecode_ByteCodeEncryptor_encrypt(JNIEnv * env, jclass cla, jbyteArray text)
 {
 	char* dst = (char*)env->GetByteArrayElements(text, 0);
 	encode(dst);
@@ -54,21 +57,23 @@ void JNICALL ClassDecryptHook(
 
 	unsigned char* _data = *new_class_data;
 
-	if (name&&strncmp(name, "com/seaboat/", 11) == 0) {
+	if (name&&strncmp(name, "com/seaboat/", 12) == 0) {
 		for (int i = 0; i < class_data_len; i++)
 		{
-			_data[i] = class_data[i] - 4;
+			_data[i] = class_data[i];
 		}
+		decode((char*)_data);
 	}
 	else {
-		for (int i = 0; i < class_data_len; ++i)
+		for (int i = 0; i < class_data_len; i++)
 		{
 			_data[i] = class_data[i];
 		}
 	}
+
 }
 
-JNIEXPORT jint JNICALL Agent_OnLoad(JavaVM *vm,char *options,void *reserved)
+JNIEXPORT jint JNICALL Agent_OnLoad(JavaVM *vm, char *options, void *reserved)
 {
 
 	jvmtiEnv *jvmti;
@@ -79,7 +84,6 @@ JNIEXPORT jint JNICALL Agent_OnLoad(JavaVM *vm,char *options,void *reserved)
 		printf("ERROR: Unable to access JVMTI!\n");
 		return ret;
 	}
-	printf("agent starting...");
 	jvmtiCapabilities capabilities;
 	(void)memset(&capabilities, 0, sizeof(capabilities));
 

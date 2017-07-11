@@ -19,3 +19,8 @@ JNIEXPORT jbyteArray JNICALL Java_com_seaboat_bytecode_ByteCodeEncryptor_encrypt
 }
 #endif
 #endif
+#ifndef CONST_HEADER_H_   
+#define CONST_HEADER_H_    
+const int k = 4;
+const int q = 26;						 
+#endif // CONST_HEADER_H_  
